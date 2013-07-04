@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="de.hannit.fsch.klr.dataservice.mssql">
+   <implementation class="de.hannit.fsch.klr.dataservice.mssql.MSSQLDataService"/>
+   <service>
+      <provide interface="de.hannit.fsch.klr.dataservice.DataService"/>
+   </service>
+</scr:component>

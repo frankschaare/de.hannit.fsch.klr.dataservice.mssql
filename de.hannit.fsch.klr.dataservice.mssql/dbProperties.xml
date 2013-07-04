@@ -5,6 +5,6 @@
 <entry key="host">localhost</entry>
 <entry key="port">1433</entry>
 <entry key="databaseName">KLR</entry>
-<entry key="user">REGIONHANNOVER/fsch</entry>
+<entry key="user">jdbc</entry>
 <entry key="password">looser77</entry>
 </properties>
