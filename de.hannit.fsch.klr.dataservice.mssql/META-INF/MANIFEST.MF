@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MSSQL
+Bundle-SymbolicName: de.hannit.fsch.klr.dataservice.mssql
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: de.hannit.fsch.klr.dataservice.mssql.Activator
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: de.hannit.fsch.common.mitarbeiter,
+ org.osgi.framework;version="1.3.0"
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: lib/,
+ .
+Require-Bundle: de.hannit.fsch.klr.dataservice;bundle-version="1.0.0"
