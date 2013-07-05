@@ -32,6 +32,7 @@ private	Properties props;
 private SQLServerDataSource ds = new SQLServerDataSource();
 
 private Connection con;
+private String info = "Nicht verbunden";
 
 
 	/**
@@ -57,11 +58,9 @@ private Connection con;
 		con = ds.getConnection();
 		
 	    DatabaseMetaData dbmd = con.getMetaData();
-	    System.out.println("dbmd:driver version = " + dbmd.getDriverVersion());
-	    System.out.println("dbmd:driver name = " + dbmd.getDriverName());
-	    System.out.println("db name = " + dbmd.getDatabaseProductName());
-	    System.out.println("db ver = " + dbmd.getDatabaseProductVersion());
-	    System.out.println("db user = " + dbmd.getUserName());
+	    this.info = "Benutzer " + dbmd.getUserName();
+	    this.info += " verbunden mit " + dbmd.getDatabaseProductName() + " (" + dbmd.getDatabaseProductVersion() + ")";
+	    this.info += " - " + dbmd.getDriverName() + " (" + dbmd.getDriverVersion() + ")";
 	    } 
 		catch (IOException e) 
 		{
@@ -86,6 +85,12 @@ private Connection con;
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public String getConnectionInfo() 
+	{
+	return info;
 	}
 
 }
