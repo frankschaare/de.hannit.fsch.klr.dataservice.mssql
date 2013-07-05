@@ -72,4 +72,11 @@ private Connection con;
 		return null;
 	}
 
+	@Override
+	public void setMitarbeiter() 
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
 }
