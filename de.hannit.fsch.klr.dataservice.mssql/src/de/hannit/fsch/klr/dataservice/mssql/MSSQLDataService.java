@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -54,7 +55,14 @@ private Connection con;
 		ds.setPassword(props.getProperty("password"));
 
 		con = ds.getConnection();
-		} 
+		
+	    DatabaseMetaData dbmd = con.getMetaData();
+	    System.out.println("dbmd:driver version = " + dbmd.getDriverVersion());
+	    System.out.println("dbmd:driver name = " + dbmd.getDriverName());
+	    System.out.println("db name = " + dbmd.getDatabaseProductName());
+	    System.out.println("db ver = " + dbmd.getDatabaseProductVersion());
+	    System.out.println("db user = " + dbmd.getUserName());
+	    } 
 		catch (IOException e) 
 		{
 		e.printStackTrace();
@@ -68,8 +76,9 @@ private Connection con;
 	@Override
 	public ArrayList<Mitarbeiter> getMitarbeiter() 
 	{
-		// TODO Auto-generated method stub
-		return null;
+	     // do {} 
+	     // while(rs.next());
+	return null;
 	}
 
 	@Override
