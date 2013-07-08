@@ -10,7 +10,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -32,8 +35,11 @@ private	Properties props;
 private SQLServerDataSource ds = new SQLServerDataSource();
 
 private Connection con;
+private PreparedStatement ps;
+private ResultSet rs;
 private String info = "Nicht verbunden";
 
+private ArrayList<Mitarbeiter> mitarbeiter = null;	
 
 	/**
 	 * 
@@ -75,16 +81,69 @@ private String info = "Nicht verbunden";
 	@Override
 	public ArrayList<Mitarbeiter> getMitarbeiter() 
 	{
-	     // do {} 
-	     // while(rs.next());
-	return null;
+	Mitarbeiter m = null;	
+	mitarbeiter = new ArrayList<Mitarbeiter>();
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_MITARBEITER);
+		rs = ps.executeQuery();
+		String test = rs.getStatement().toString();
+		
+	      while (rs.next()) 
+	      {
+	    	  m = new Mitarbeiter();
+	    	  m.setPersonalNR(rs.getInt(1));
+	    	  m.setBenutzerName((rs.getString(2) != null ? rs.getString(2) : "unbekannt"));
+	    	  m.setNachname(rs.getString(3));
+	    	  m.setVorname((rs.getString(4) != null ? rs.getString(4) : "unbekannt"));
+	    	  
+	    	  mitarbeiter.add(m);
+	      }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	
+	return mitarbeiter;
 	}
 
 	@Override
-	public void setMitarbeiter() 
+	public void setMitarbeiter(ArrayList<String[]> fields) 
 	{
-		// TODO Auto-generated method stub
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.INSERT_MITARBEITER);
+			for (String[] strings : fields) 
+			{
+			ps.setInt(1, Integer.parseInt(strings[0]));
+				switch (strings[1].length()) 
+				{
+				case 2:
+				ps.setNull(2, Types.VARCHAR);	
+				break;
+	
+				default:
+				String test = remMoveQuotes(strings[1]);
+				ps.setString(2, test);
+				break;
+			}
+			ps.setString(3, remMoveQuotes(strings[2]));
+			ps.setString(4, remMoveQuotes(strings[3]));
+			
+			ps.execute();
+			}
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}
 		
+	}
+
+	private String remMoveQuotes(String string) 
+	{
+	return string.replace("\"","");	
 	}
 
 	@Override
