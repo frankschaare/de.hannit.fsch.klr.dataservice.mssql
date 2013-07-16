@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ import org.eclipse.core.runtime.FileLocator;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 
+import de.hannit.fsch.common.loga.LoGaDatensatz;
 import de.hannit.fsch.common.mitarbeiter.Mitarbeiter;
 import de.hannit.fsch.klr.dataservice.DataService;
 
@@ -109,6 +111,30 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	}
 
 	@Override
+	public SQLException setLoGaDaten(LoGaDatensatz datenSatz)
+	{
+	SQLException e = null;	
+	try 
+		{
+		ps = con.prepareStatement(PreparedStatements.INSERT_LOGA);
+		ps.setInt(1, datenSatz.getPersonalNummer());
+		ps.setDouble(2, datenSatz.getBrutto());
+		ps.setDate(3, (Date) datenSatz.getAbrechnungsMonat());
+		ps.setString(4, datenSatz.getTarifGruppe());
+		ps.setInt(5, datenSatz.getTarifstufe());
+		ps.setDouble(6, datenSatz.getStellenAnteil());
+		
+		rs = ps.executeQuery();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+		}	
+	return e;
+	}
+
+	@Override
 	public void setMitarbeiter(ArrayList<String[]> fields) 
 	{
 		try 
@@ -151,5 +177,25 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	{
 	return info;
 	}
+
+	@Override
+	public boolean existsMitarbeiter(int personalNummer)
+	{
+	boolean result = false;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_MITARBEITER_PERSONALNUMMER);
+		ps.setInt(1, personalNummer);
+		rs = ps.executeQuery();
+				
+	    result = rs.next();
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return result;
+	}
+
 
 }
