@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -114,17 +113,18 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	public SQLException setLoGaDaten(LoGaDatensatz datenSatz)
 	{
 	SQLException e = null;	
+	boolean result = false;
 	try 
 		{
 		ps = con.prepareStatement(PreparedStatements.INSERT_LOGA);
 		ps.setInt(1, datenSatz.getPersonalNummer());
-		ps.setDouble(2, datenSatz.getBrutto());
-		ps.setDate(3, (Date) datenSatz.getAbrechnungsMonat());
+		ps.setDate(2, datenSatz.getAbrechnungsMonatSQL());
+		ps.setDouble(3, datenSatz.getBrutto());
 		ps.setString(4, datenSatz.getTarifGruppe());
 		ps.setInt(5, datenSatz.getTarifstufe());
 		ps.setDouble(6, datenSatz.getStellenAnteil());
 		
-		rs = ps.executeQuery();
+		result = ps.execute();
 		} 
 		catch (SQLException exception) 
 		{
