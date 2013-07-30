@@ -13,5 +13,7 @@ Bundle-ClassPath: .
 Require-Bundle: de.hannit.fsch.klr.dataservice;bundle-version="1.0.0",
  com.microsoft.sqlserver.jdbc.SQLServerDriver;bundle-version="1.0.0",
  de.hannit.fsch.common.csv.loga,
- de.hannit.fsch.common.csv.azv
+ de.hannit.fsch.common.csv.azv,
+ de.hannit.fsch.common.organisation.hannit,
+ de.hannit.fsch.common.mitarbeiter
 Service-Component: OSGI-INF/MSSQLDataService.xml

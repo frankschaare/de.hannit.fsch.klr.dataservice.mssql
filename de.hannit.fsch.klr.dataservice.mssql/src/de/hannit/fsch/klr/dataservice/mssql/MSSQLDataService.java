@@ -18,14 +18,20 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.eclipse.core.runtime.FileLocator;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 
 import de.hannit.fsch.common.csv.azv.AZVDatensatz;
+import de.hannit.fsch.common.csv.azv.Arbeitszeitanteil;
 import de.hannit.fsch.common.loga.LoGaDatensatz;
 import de.hannit.fsch.common.mitarbeiter.Mitarbeiter;
+import de.hannit.fsch.common.mitarbeiter.besoldung.Tarifgruppe;
+import de.hannit.fsch.common.mitarbeiter.besoldung.Tarifgruppen;
+import de.hannit.fsch.common.organisation.hannit.Organisation;
+import de.hannit.fsch.common.organisation.reporting.Monatsbericht;
 import de.hannit.fsch.klr.dataservice.DataService;
 
 
@@ -41,6 +47,7 @@ private SQLServerDataSource ds = new SQLServerDataSource();
 private Connection con;
 private PreparedStatement ps;
 private ResultSet rs;
+private ResultSet subSelect;
 private String info = "Nicht verbunden";
 
 private Calendar cal = Calendar.getInstance();
@@ -93,7 +100,6 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		{
 		ps = con.prepareStatement(PreparedStatements.SELECT_MITARBEITER);
 		rs = ps.executeQuery();
-		String test = rs.getStatement().toString();
 		
 	      while (rs.next()) 
 	      {
@@ -103,6 +109,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	    	  m.setNachname(rs.getString(3));
 	    	  m.setVorname((rs.getString(4) != null ? rs.getString(4) : "unbekannt"));
 	    	  
+	    	  m.setArbeitszeitAnteile(getArbeitszeitanteile(m.getPersonalNR()));
 	    	  mitarbeiter.add(m);
 	      }
 		} 
@@ -111,6 +118,147 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		e.printStackTrace();
 		}	
 	
+	return mitarbeiter;
+	}
+	
+	/**
+	 * Liefert die Mitarbeiter inclusive AZV-Daten für den ausgewählten Monat
+	 * Schritt 1: 	TreeMap 'aktuell' enthält alle Mitarbeiter, die für den Auswahlmonat Gehalt > 900 € erhalten haben 
+	 * 				(so werden Erstattungen herausgehalten)
+	 * Schritt 2: 	TreeMap 'mitarbeiter' enthält alle Mitarbeiter, die für den Auswahlmonat eine AZV Meldung agbegeben haben.
+	 * Schritt 3: 	Hat Mitarbeiter für den Auswahlmonat keine AZV Meldung abgegeben, wird versucht, die letzte AZV zu laden
+	 * Schritt 4: 	Wird auch keine letzte AZV, wird der Mitarbeiter besonders gekennzeichnet. In so einen Fall wird er im
+	 * 				NavTree ausgegraut und die AZV muss aus alten Excel-Daten nachgefriemelt werden. Diese Mitarbeiter sollen
+	 * 				der Teamleitung gemeldet werden.
+	 */
+	@Override
+	public TreeMap<Integer, Mitarbeiter> getAZVMonat(java.util.Date selectedMonth)
+	{
+	Mitarbeiter m = null;	
+	Arbeitszeitanteil azv = null;
+	String strKey = null;
+	TreeMap<Integer, Mitarbeiter> mitarbeiter = new TreeMap<Integer, Mitarbeiter>();
+	cal.setTime(selectedMonth);
+	java.sql.Date sqlDate = new java.sql.Date(cal.getTimeInMillis());
+	
+			// Schritt 1: alle für den Auswahlmonat 'bezahlten' Mitarbeiter ausgeben
+			try
+			{
+			ps = con.prepareStatement(PreparedStatements.SELECT_MITARBEITER_AKTUELL);
+			ps.setDate(1,sqlDate);
+			rs = ps.executeQuery();
+		    	while (rs.next())
+		    	{
+		    	Integer iPNR = rs.getInt(1);
+			    		if (mitarbeiter.containsKey(iPNR))
+			    		{
+						m = mitarbeiter.get(iPNR);
+			    		}
+			    		else
+			    		{
+			    		m = new Mitarbeiter();
+			    		m.setPersonalNR(iPNR);
+			    		m.setNachname(rs.getString(2));
+			    		m.setVorname((rs.getString(3) != null ? rs.getString(3) : "unbekannt"));
+			    		m.setAbrechnungsMonat(selectedMonth);
+			    		m.setBrutto(rs.getDouble(5));
+			    		m.setTarifGruppe(rs.getString(6));
+			    		m.setStellenAnteil(rs.getDouble(7));
+			    		// TODO: WAs ist mit der 900 € Grenze ???			    		
+			    		mitarbeiter.put(iPNR, m);
+			    		}
+		    	}			
+			}
+			catch (SQLException ex)
+			{
+			ex.printStackTrace();
+			}
+			// Schritt 2: für jeden 'bezahlten Mitarbeiter' die AZV Meldungen holen
+			try 
+			{
+			ps = con.prepareStatement(PreparedStatements.SELECT_ARBEITSZEITANTEILE_MITARBEITER);
+
+				for (Integer pnr : mitarbeiter.keySet())
+				{
+				ArrayList<Arbeitszeitanteil> azvGesamt = new ArrayList<Arbeitszeitanteil>();	
+				ps.setInt(1,pnr);
+				rs = ps.executeQuery();
+					
+					while (rs.next())
+					{
+					azv = new Arbeitszeitanteil();
+					azv.setBerichtsMonat(rs.getDate(4));
+						if (rs.getString(5) != null)
+						{
+						azv.setKostenstelle(rs.getString(5));
+						azv.setKostenStelleBezeichnung(rs.getString(6));
+						}
+						else
+						{
+						azv.setKostentraeger(rs.getString(7));
+						azv.setKostenTraegerBezeichnung(rs.getString(8));
+						}
+					azv.setProzentanteil(rs.getInt(9));  	
+
+					azvGesamt.add(azv);  
+					}
+					
+					// Nun liegen alle verfügbaren AZV-Anteil vor. Gibt es welche für den angeforderten Monat (selectedMonth) ?
+					if (azvGesamt.size() > 0)
+					{
+					boolean azvAktuell = false;
+						for (Arbeitszeitanteil arbeitszeitanteil : azvGesamt)
+						{
+							if (arbeitszeitanteil.getBerichtsMonat().equals(sqlDate))
+							{
+							azvAktuell = true;
+							mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);	
+							}
+						}
+
+						// Keine aktuellen AZV-Meldungen gefunden. Welches ist das aktuellste Datum ?
+						if (! azvAktuell)
+						{
+	
+						Date maxDate = null;
+							for (Arbeitszeitanteil arbeitszeitanteil : azvGesamt)
+							{
+								if (maxDate == null)
+								{
+								maxDate = arbeitszeitanteil.getBerichtsMonat();	
+								}
+								else
+								{
+								maxDate = arbeitszeitanteil.getBerichtsMonat().after(maxDate) ? arbeitszeitanteil.getBerichtsMonat() : maxDate;
+								}
+							}
+
+							mitarbeiter.get(pnr).setAzvAktuell(false);
+							// dritte Runde: verarbeite alle AZV-Meldungen, die gleich maxDate sind	
+							for (Arbeitszeitanteil arbeitszeitanteil : azvGesamt)
+							{
+								if (arbeitszeitanteil.getBerichtsMonat().equals(maxDate))
+								{
+								mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);
+								}
+							}							
+						}
+					}
+					
+					// Keine AZV Daten gefunden. Der Mitarbeiter erhält eine leere AZV-Liste
+					else 
+					{
+					mitarbeiter.get(pnr).setAzvMonat(new TreeMap<String, Arbeitszeitanteil>());	
+					}
+					
+					
+				}
+			} 
+			catch (SQLException e) 
+			{
+			e.printStackTrace();
+			}	
+		
 	return mitarbeiter;
 	}
 
@@ -383,5 +531,97 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		e = exception;
 		}	
 	return e;
+	}
+
+	@Override
+	public ArrayList<Arbeitszeitanteil> getArbeitszeitanteile(int personalNummer)
+	{
+	ArrayList<Arbeitszeitanteil> arbeitszeitAnteile = new ArrayList<Arbeitszeitanteil>();	
+	Arbeitszeitanteil anteil = null;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_ARBEITSZEITANTEILE);
+		ps.setInt(1, personalNummer);
+		subSelect = ps.executeQuery();
+					
+		    while (subSelect.next()) 
+		    {
+		    anteil = new Arbeitszeitanteil();	  
+		    anteil.setITeam(subSelect.getInt(2));
+		    anteil.setBerichtsMonat(subSelect.getDate(3));
+		    anteil.setKostenstelle(subSelect.getString(4));
+		    anteil.setKostentraeger(subSelect.getString(5));
+		    anteil.setProzentanteil(subSelect.getInt(6));
+		    
+		    arbeitszeitAnteile.add(anteil);
+		    }
+			} 
+			catch (SQLException e) 
+			{
+			e.printStackTrace();
+			}	
+		
+	return arbeitszeitAnteile;
+	}
+
+	@Override
+	public Organisation getOrganisation()
+	{
+	Organisation hannit = new Organisation();
+	TreeMap<java.util.Date, Monatsbericht> monatsBerichte = new TreeMap<java.util.Date, Monatsbericht>();
+	Monatsbericht bericht = null;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_MONATSSUMMEN);
+		rs = ps.executeQuery();
+					
+		    while (rs.next()) 
+		    {
+		    bericht = new Monatsbericht();	  
+		    bericht.setBerichtsMonat(rs.getDate(1));
+		    bericht.setSummeBrutto(rs.getDouble(2));
+		    bericht.setAnzahlStellen(rs.getDouble(3));
+		    bericht.setMitarbeiterGesamt(rs.getInt(4));
+		    
+		    monatsBerichte.put(bericht.getBerichtsMonat(), bericht);
+		    }
+			} 
+			catch (SQLException e) 
+			{
+			e.printStackTrace();
+			}	
+	hannit.setMonatsBerichte(monatsBerichte);
+	
+	return hannit;
+	}
+
+	@Override
+	public Tarifgruppen getTarifgruppen(java.util.Date selectedMonth)
+	{
+	Tarifgruppen tarifgruppen = new Tarifgruppen();	
+	java.sql.Date sqlDate = new java.sql.Date(cal.getTimeInMillis());
+	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_TARIFGRUPPEN);
+		ps.setDate(1, sqlDate);
+		rs = ps.executeQuery();
+					
+		    while (rs.next()) 
+		    {
+		    Tarifgruppe t = new Tarifgruppe();
+		    t.setBerichtsMonat(selectedMonth);
+		    t.setTarifGruppe(rs.getString(1));
+		    t.setSummeTarifgruppe(rs.getDouble(2));
+		    t.setSummeStellen(rs.getDouble(3));
+		    
+		    tarifgruppen.getTarifGruppen().put(t.getTarifGruppe(), t);
+		    }
+			} 
+			catch (SQLException e) 
+			{
+			e.printStackTrace();
+			}
+	return tarifgruppen;
 	}
 }
