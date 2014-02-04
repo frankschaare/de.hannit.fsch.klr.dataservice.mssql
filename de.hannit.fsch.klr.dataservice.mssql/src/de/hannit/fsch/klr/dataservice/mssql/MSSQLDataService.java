@@ -203,7 +203,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 					azvGesamt.add(azv);  
 					}
 					
-					// Nun liegen alle verfügbaren AZV-Anteil vor. Gibt es welche für den angeforderten Monat (selectedMonth) ?
+					// Nun liegen alle verfügbaren AZV-Anteile vor. Gibt es welche für den angeforderten Monat (selectedMonth) ?
 					if (azvGesamt.size() > 0)
 					{
 					boolean azvAktuell = false;
@@ -322,6 +322,42 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	}		
 
 	@Override
+	public SQLException setMitarbeiter(Mitarbeiter m) 
+	{
+	SQLException ex = null;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.INSERT_MITARBEITER);
+		ps.setInt(1, m.getPersonalNR());
+		
+			if (m.getBenutzerName() != null) 
+			{
+			ps.setString(2, m.getBenutzerName());
+			}
+			else 
+			{
+			ps.setNull(2, Types.VARCHAR);	
+			}
+		ps.setString(3, m.getNachname());
+			if (m.getVorname() != null) 
+			{
+			ps.setString(4, m.getVorname());
+			}
+			else 
+			{
+			ps.setNull(4, Types.VARCHAR);	
+			}
+		ps.execute();
+		} 
+		catch (SQLException e) 
+		{
+		ex = e;	
+		e.printStackTrace();
+		}
+	return ex;	
+	}	
+	
+	@Override
 	public void setMitarbeiter(ArrayList<String[]> fields) 
 	{
 		try 
@@ -350,8 +386,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		catch (SQLException e) 
 		{
 		e.printStackTrace();
-		}
-		
+		}	
 	}
 
 	private String remMoveQuotes(String string) 
