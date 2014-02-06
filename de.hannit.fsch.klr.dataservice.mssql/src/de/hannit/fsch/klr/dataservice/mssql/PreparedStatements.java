@@ -31,6 +31,8 @@ public static final String SELECT_ARBEITSZEITANTEILE_BERICHTSMONAT = "SELECT * F
 public static final String SELECT_ARBEITSZEITANTEILE_MITARBEITER = "SELECT * FROM [dbo].[vwArbeitszeitanteile] WHERE Mitarbeiter_PNR = ?";
 
 public static final String SELECT_MONATSSUMMEN = "SELECT * FROM [dbo].[Monatssummen]";
+public static final String INSERT_MONATSSUMMEN = "INSERT INTO [dbo].[MonatssummenAZV]([ID], [Kostenobjekt], [Berichtsmonat], [Summe]) VALUES (NEWID(), ?, ?, ?)";
+public static final String INSERT_MONATSSUMMENVZAE = "INSERT INTO [dbo].[MonatssummenVZAE] ([ID], [Berichtsmonat], [Tarifgruppe], [SummeTarifgruppe], [SummeStellen], [VZAE]) VALUES (NEWID(), ?, ?, ?, ?, ?)";
 
 public static final String INSERT_LOGA = "INSERT INTO [dbo].[LoGa] ([Mitarbeiter_PNR], [Berichtsmonat], [Brutto], [Tarifgruppe], [Tarifstufe], [Stellenanteil]) VALUES (?, ?, ?, ?, ?, ?)";
 }

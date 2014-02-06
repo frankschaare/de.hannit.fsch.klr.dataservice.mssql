@@ -659,4 +659,50 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 			}
 	return tarifgruppen;
 	}
+
+	@Override
+	public SQLException setVZAEMonatsDaten(String strDatum, String strTarifgruppe, double dSummeTarifgruppe, double dSummeStellen, double dVZAE)
+	{
+	SQLException e = null;	
+	boolean result = false;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.INSERT_MONATSSUMMENVZAE);
+		ps.setString(1, strDatum);
+		ps.setString(2, strTarifgruppe);
+		ps.setDouble(3, dSummeTarifgruppe);
+		ps.setDouble(4, dSummeStellen);
+		ps.setDouble(5, dVZAE);
+			
+		result = ps.execute();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+		}	
+	return e;
+	}
+	
+	@Override
+	public SQLException setAZVMonatsDaten(String kostenObjekt, String strDatum, double dSumme)
+	{
+	SQLException e = null;	
+	boolean result = false;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.INSERT_MONATSSUMMEN);
+		ps.setString(1, kostenObjekt);
+		ps.setString(2, strDatum);
+		ps.setDouble(3, dSumme);
+			
+		result = ps.execute();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+		}	
+	return e;
+	}
 }
