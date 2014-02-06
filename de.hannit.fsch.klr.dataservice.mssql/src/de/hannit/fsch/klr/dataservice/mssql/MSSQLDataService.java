@@ -212,7 +212,25 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 							if (arbeitszeitanteil.getBerichtsMonat().equals(sqlDate))
 							{
 							azvAktuell = true;
-							mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);	
+							/*
+							 * Leider hat sich herausgestellt, das einige Mitarbeiter mehrere Einträge zur gleichen KST / KTR abgeben.
+							 * Ein einfaches put (wie bisher) überschreibt dabei einen möglicherweise bereits existierenden Arbeitszeitanteil:
+							 */
+							// mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);
+							/*
+							 * Es wird daher zunächst geprüft, ob bereits ein Arbeitszeitanteil vorhanden ist. Nur wenn nicht, wird der Anteil mit put gespeichert 
+							 */
+								try
+								{
+								Arbeitszeitanteil azAnteil = mitarbeiter.get(pnr).getAzvMonat().get(arbeitszeitanteil.getKostenstelleOderKostentraegerLang());
+								// addiere den Prozentanteil zum bereits vorhandenem Wert:
+								azAnteil.setProzentanteil((azAnteil.getProzentanteil() + arbeitszeitanteil.getProzentanteil()));
+								}
+								// Arbeitszeitanteil noch nicht gespeichert
+								catch (NullPointerException e)
+								{
+								mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);
+								}
 							}
 						}
 
@@ -239,7 +257,25 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 							{
 								if (arbeitszeitanteil.getBerichtsMonat().equals(maxDate))
 								{
-								mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);
+								/*
+								 * Leider hat sich herausgestellt, das einige Mitarbeiter mehrere Einträge zur gleichen KST / KTR abgeben.
+								 * Ein einfaches put (wie bisher) überschreibt dabei einen möglicherweise bereits existierenden Arbeitszeitanteil:
+								 */
+								// mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);
+								/*
+								 * Es wird daher zunächst geprüft, ob bereits ein Arbeitszeitanteil vorhanden ist. Nur wenn nicht, wird der Anteil mit put gespeichert 
+								 */
+									try
+									{
+									Arbeitszeitanteil azAnteil = mitarbeiter.get(pnr).getAzvMonat().get(arbeitszeitanteil.getKostenstelleOderKostentraegerLang());
+									// addiere den Prozentanteil zum bereits vorhandenem Wert:
+									azAnteil.setProzentanteil((azAnteil.getProzentanteil() + arbeitszeitanteil.getProzentanteil()));
+									}
+									// Arbeitszeitanteil noch nicht gespeichert
+									catch (NullPointerException e)
+									{
+									mitarbeiter.get(pnr).getAzvMonat().put(arbeitszeitanteil.getKostenstelleOderKostentraegerLang(), arbeitszeitanteil);
+									}
 								}
 							}							
 						}
