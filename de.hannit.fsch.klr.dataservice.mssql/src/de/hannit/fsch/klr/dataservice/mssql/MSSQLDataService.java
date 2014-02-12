@@ -198,7 +198,8 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 						azv.setKostentraeger(rs.getString(7));
 						azv.setKostenTraegerBezeichnung(rs.getString(8));
 						}
-					azv.setProzentanteil(rs.getInt(9));  	
+					azv.setProzentanteil(rs.getInt(9));
+					azv.setITeam(rs.getInt(10));
 
 					azvGesamt.add(azv);  
 					}
