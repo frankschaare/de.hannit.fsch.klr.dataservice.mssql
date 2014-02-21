@@ -15,6 +15,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Properties;
@@ -51,6 +53,7 @@ private ResultSet subSelect;
 private String info = "Nicht verbunden";
 
 private Calendar cal = Calendar.getInstance();
+private DateFormat sqlServerDatumsFormat = new SimpleDateFormat( "yyyy-MM-dd" );
 
 private ArrayList<Mitarbeiter> mitarbeiter = null;	
 
@@ -529,6 +532,43 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}
 	return exists;
 	}
+	
+	@Override
+	public boolean existsPersonaldurchschnittskosten(java.util.Date selectedMonth)
+	{
+	boolean exists = false;	
+		try 
+		{
+			if (rs != null)
+			{
+			rs.close();
+			rs = null;
+			}	
+		ps = con.prepareStatement(PreparedStatements.SELECT_COUNT_PERSONALDURCHSCHNITTSKOSTEN);
+		ps.setString(1, sqlServerDatumsFormat.format(selectedMonth));
+		rs = ps.executeQuery();
+		rs.next();
+			
+		exists = rs.getInt(PreparedStatements.COUNT_COLUMN) > 0 ? true : false;
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+		finally
+		{
+			try
+			{
+			rs.close();
+			if (rs != null)	{rs = null;}
+			}
+			catch (SQLException e)
+			{
+			e.printStackTrace();
+			}	
+		}
+	return exists;
+	}	
 
 	@Override
 	public SQLException setKostenstelle(String kostenStelle, String kostenStellenBezeichnung)

@@ -21,6 +21,7 @@ public static final String SELECT_KOSTENSTELLE = "SELECT * FROM [dbo].[Kostenste
 public static final String INSERT_KOSTENSTELLE = "INSERT INTO [dbo].[Kostenstellen] ([Kostenstelle],[Bezeichnung],[von]) VALUES (?, ?, ?)";
 public static final String SELECT_COUNT_KOSTENSTELLE = "SELECT COUNT([Kostenstelle]) AS Anzahl FROM [dbo].[Kostenstellen]	WHERE [Kostenstelle] = ?";
 public static final String SELECT_COUNT_KOSTENTRAEGER = "SELECT COUNT([Kostentraeger]) AS Anzahl FROM [dbo].[Kostentraeger]	WHERE [Kostentraeger] = ?";
+public static final String SELECT_COUNT_PERSONALDURCHSCHNITTSKOSTEN = "SELECT COUNT(*) AS Anzahl FROM [dbo].[PersonaldurchschnittsKosten] WHERE Berichtsmonat = ?";
 public static final String INSERT_KOSTENTRAEGER = "INSERT INTO [dbo].[Kostentraeger] ([Kostentraeger],[Bezeichnung],[von])VALUES (?, ?, ?)";
 public static final String INSERT_AZV = "INSERT INTO [dbo].[Arbeitszeitanteile] ([Mitarbeiter_PNR],[TeamNR],[Berichtsmonat],[Kostenstelle],[Kostentraeger],[Prozentanteil]) VALUES (?, ?, ?, ?, ?, ?)";
 
