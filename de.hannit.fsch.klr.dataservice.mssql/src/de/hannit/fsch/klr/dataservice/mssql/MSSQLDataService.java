@@ -50,6 +50,7 @@ private Connection con;
 private PreparedStatement ps;
 private ResultSet rs;
 private ResultSet subSelect;
+private ResultSet rsAZV;
 private String info = "Nicht verbunden";
 
 private Calendar cal = Calendar.getInstance();
@@ -359,7 +360,9 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		e = exception;
 		}	
 	return e;
-	}		
+	}	
+	
+	
 
 	@Override
 	public SQLException setMitarbeiter(Mitarbeiter m) 
@@ -645,6 +648,51 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	return e;
 	}
 
+	/*
+	 * Liefert die Arbeitszeitanteile für den ausgewählten Mitarbeiter im ausgewählten Berichtsmonat
+	 * (non-Javadoc)
+	 * @see de.hannit.fsch.klr.dataservice.DataService#getArbeitszeitanteile(int, java.util.Date)
+	 */
+	@Override
+	public ArrayList<Arbeitszeitanteil> getArbeitszeitanteile(int personalNummer, java.util.Date selectedMonth)
+	{
+	ArrayList<Arbeitszeitanteil> arbeitszeitAnteile = new ArrayList<Arbeitszeitanteil>();	
+	Arbeitszeitanteil azv = null;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_ARBEITSZEITANTEILE_MITARBEITER_BERICHTSMONAT);
+		ps.setInt(1, personalNummer);
+		ps.setString(2, sqlServerDatumsFormat.format(selectedMonth));
+		rsAZV = ps.executeQuery();
+					
+		    while (rsAZV.next()) 
+		    {
+			azv = new Arbeitszeitanteil();
+			azv.setBerichtsMonat(rsAZV.getDate(4));
+				if (rsAZV.getString(5) != null)
+				{
+				azv.setKostenstelle(rsAZV.getString(5));
+				azv.setKostenStelleBezeichnung(rsAZV.getString(6));
+				}
+				else
+				{
+				azv.setKostentraeger(rsAZV.getString(7));
+				azv.setKostenTraegerBezeichnung(rsAZV.getString(8));
+				}
+			azv.setProzentanteil(rsAZV.getInt(9));
+			azv.setITeam(rsAZV.getInt(10));
+		    
+		    arbeitszeitAnteile.add(azv);
+		    }
+			} 
+			catch (SQLException e) 
+			{
+			e.printStackTrace();
+			}	
+		
+	return arbeitszeitAnteile;
+	}
+	
 	@Override
 	public ArrayList<Arbeitszeitanteil> getArbeitszeitanteile(int personalNummer)
 	{
@@ -782,4 +830,72 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}	
 	return e;
 	}
+
+	@Override
+	public SQLException setPersonaldurchschnittskosten(int teamNR, java.util.Date datum, double bruttoAngestellte, double vzaeAngestellte, double bruttoBeamte, double vzaeBeamte, double abzugVorkostenstellen)
+	{
+	SQLException e = null;	
+	boolean result = false;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.INSERT_PERSONALDURCHSCHNITTSKOSTEN);
+		ps.setInt(1, teamNR);
+		ps.setString(2, sqlServerDatumsFormat.format(datum));
+		ps.setDouble(3, bruttoAngestellte);
+		ps.setDouble(4, vzaeAngestellte);
+		ps.setDouble(5, bruttoBeamte);
+		ps.setDouble(6, vzaeBeamte);
+		ps.setDouble(7, abzugVorkostenstellen);
+				
+		result = ps.execute();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+			}	
+	return e;
+	}
+
+	@Override
+	public SQLException deletePersonaldurchschnittskosten(java.util.Date datum)
+	{
+	SQLException e = null;	
+	boolean result = false;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.DELETE_PERSONALDURCHSCHNITTSKOSTEN);
+		ps.setString(1, sqlServerDatumsFormat.format(datum));
+		result = ps.execute();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+		}	
+	return e;
+	}
+
+	@Override
+	public Integer getPersonalnummer(String nachname)
+	{
+	int personalNR = 0;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_PERSONALNUMMER);
+		ps.setString(1, nachname);
+		rs = ps.executeQuery();
+		
+	      while (rs.next()) 
+	      {
+    	  personalNR = rs.getInt(1);
+	      }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return personalNR;
+	}
 }
+
