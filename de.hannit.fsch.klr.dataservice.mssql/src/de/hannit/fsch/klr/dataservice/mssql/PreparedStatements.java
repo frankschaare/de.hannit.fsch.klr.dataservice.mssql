@@ -12,6 +12,10 @@ public interface PreparedStatements
 public static final String COUNT_COLUMN = "Anzahl";
 public static final String INSERT_DATENIMPORT = "INSERT INTO [dbo].[Datenimporte] ([ID], [Importdatum],[Dateiname],[Pfad],[AnzahlDaten],[Berichtsmonat],[Datenquelle])  VALUES (NEWID(),?,?,?,?,?,?)";
 
+public static final String INSERT_ERGEBNIS = "INSERT INTO [dbo].[Ergebnisse] ([Kostenart],[TeamNR],[Berichtsmonat],[Ertrag],[Materialaufwand],[AfA],[SbA],[Personalkosten],[SummeEinzelkosten],[Deckungsbeitrag1],[Verteilung1110],[Verteilung2010],[Verteilung2020],[Verteilung3010],[Verteilung4010],[VerteilungGesamt],[Ergebnis]) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+public static final String SELECT_COUNT_ERGEBNIS = "SELECT COUNT(*) AS Anzahl FROM [dbo].[Ergebnisse] WHERE TeamNR = ? AND Berichtsmonat = ?";
+public static final String DELETE_ERGEBNIS = "DELETE FROM [dbo].[Ergebnisse] WHERE Berichtsmonat = ? AND TeamNR = ?";
+
 public static final String INSERT_MITARBEITER = "INSERT INTO Mitarbeiter ([PNr],[Benutzer],[Nachname],[Vorname]) VALUES (?,?,?,?)";
 public static final String SELECT_MITARBEITER = "SELECT * FROM [dbo].[Mitarbeiter]";
 public static final String SELECT_PERSONALNUMMER = "SELECT [PNr] FROM [dbo].[Mitarbeiter] WHERE Nachname = ?";

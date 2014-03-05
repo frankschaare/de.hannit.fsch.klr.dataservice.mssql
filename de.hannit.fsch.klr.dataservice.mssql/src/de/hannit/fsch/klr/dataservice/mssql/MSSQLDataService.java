@@ -328,6 +328,8 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	return e;
 	}
 	
+	
+	
 	@Override
 	public SQLException setAZVDaten(AZVDatensatz datenSatz)
 	{
@@ -536,6 +538,8 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	return exists;
 	}
 	
+	
+	
 	@Override
 	public boolean existsPersonaldurchschnittskosten(java.util.Date selectedMonth)
 	{
@@ -627,7 +631,6 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	// [Importdatum],[Dateiname],[Pfad],[AnzahlDaten],[Berichtsmonat],[Datenquelle]	
 	SQLException e = null;	
 	boolean result = false;
-	System.out.println(pfad);
 		try 
 		{
 		ps = con.prepareStatement(PreparedStatements.INSERT_DATENIMPORT);
@@ -896,6 +899,100 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		e.printStackTrace();
 		}	
 	return personalNR;
+	}
+
+	@Override
+	public SQLException setErgebnis(String kostenArt, int teamNR, Date berichtsMonat, double ertrag, double materialAufwand, double afa, double sba, double personalkosten, double summeEinzelkosten, double deckungsbeitrag1, double verteilung1110, double verteilung2010, double verteilung2020, double verteilung3010, double verteilung4010, double verteilungGesamt, double ergebnis) 
+	{
+	SQLException e = null;	
+	boolean result = false;
+			try 
+			{
+			ps = con.prepareStatement(PreparedStatements.INSERT_ERGEBNIS);
+			ps.setString(1, kostenArt);
+			ps.setInt(2, teamNR);
+			ps.setDate(3, berichtsMonat);
+				if (ertrag != 0) {ps.setDouble(4, ertrag);} else {ps.setNull(4, Types.NULL);}
+				if (materialAufwand != 0) {ps.setDouble(5, materialAufwand);} else {ps.setNull(5, Types.NULL);}
+				if (afa != 0) {ps.setDouble(6, afa);} else {ps.setNull(6, Types.NULL);}
+				if (sba != 0) {ps.setDouble(7, sba);} else {ps.setNull(7, Types.NULL);}
+			ps.setDouble(8, personalkosten);
+				if (summeEinzelkosten != 0) {ps.setDouble(9, summeEinzelkosten);} else {ps.setNull(9, Types.NULL);}
+				if (deckungsbeitrag1 != 0) {ps.setDouble(10, deckungsbeitrag1);} else {ps.setNull(10, Types.NULL);}
+				if (verteilung1110 != 0) {ps.setDouble(11, verteilung1110);} else {ps.setNull(11, Types.NULL);}
+				if (verteilung2010 != 0) {ps.setDouble(12, verteilung2010);} else {ps.setNull(12, Types.NULL);}
+				if (verteilung2020 != 0) {ps.setDouble(13, verteilung2020);} else {ps.setNull(13, Types.NULL);}
+				if (verteilung3010 != 0) {ps.setDouble(14, verteilung3010);} else {ps.setNull(14, Types.NULL);}
+				if (verteilung4010 != 0) {ps.setDouble(15, verteilung4010);} else {ps.setNull(15, Types.NULL);}
+			ps.setDouble(16, verteilungGesamt);
+			ps.setDouble(17, ergebnis);
+			
+			result = ps.execute();
+			} 
+			catch (SQLException exception) 
+			{
+			exception.printStackTrace();
+			e = exception;
+			}	
+		return e;
+	}
+
+	@Override
+	public boolean existsErgebnis(int teamNR, java.util.Date selectedMonth)
+	{
+	boolean exists = false;	
+		try 
+		{
+			if (rs != null)
+			{
+			rs.close();
+			rs = null;
+			}	
+		ps = con.prepareStatement(PreparedStatements.SELECT_COUNT_ERGEBNIS);
+		ps.setInt(1, teamNR);
+		ps.setString(2, sqlServerDatumsFormat.format(selectedMonth));
+		rs = ps.executeQuery();
+		rs.next();
+			
+		exists = rs.getInt(PreparedStatements.COUNT_COLUMN) > 0 ? true : false;
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+		finally
+		{
+			try
+			{
+			rs.close();
+			if (rs != null)	{rs = null;}
+			}
+			catch (SQLException e)
+			{
+			e.printStackTrace();
+			}	
+		}
+	return exists;
+	}
+
+	@Override
+	public SQLException deleteErgebnis(Date berichtsMonat, int teamNR)
+	{
+	SQLException e = null;	
+	boolean result = false;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.DELETE_ERGEBNIS);
+		ps.setString(1, sqlServerDatumsFormat.format(berichtsMonat));
+		ps.setInt(2, teamNR);
+			result = ps.execute();
+			} 
+			catch (SQLException exception) 
+			{
+			exception.printStackTrace();
+			e = exception;
+			}	
+	return e;
 	}
 }
 
