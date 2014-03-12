@@ -38,6 +38,7 @@ public static final String SELECT_TARIFGRUPPEN = "SELECT Tarifgruppe, SUM(Brutto
 
 public static final String SELECT_ARBEITSZEITANTEILE = "SELECT * FROM [dbo].[Arbeitszeitanteile] WHERE Mitarbeiter_PNR = ?";
 public static final String SELECT_ARBEITSZEITANTEILE_BERICHTSMONAT = "SELECT * FROM [dbo].[vwArbeitszeitanteile] WHERE Berichtsmonat = ?";
+public static final String SELECT_ARBEITSZEITANTEILE_LETZTERBERICHTSMONAT = "SELECT [Berichtsmonat], COUNT(*) AS Anzahl FROM [dbo].[Arbeitszeitanteile] WHERE [Berichtsmonat] = (SELECT MAX([Berichtsmonat]) FROM [dbo].[Arbeitszeitanteile]) GROUP BY [Berichtsmonat]";
 public static final String SELECT_ARBEITSZEITANTEILE_MITARBEITER_BERICHTSMONAT = "SELECT * FROM [dbo].[vwArbeitszeitanteile] WHERE Mitarbeiter_PNR = ? AND Berichtsmonat = ?";
 public static final String SELECT_ARBEITSZEITANTEILE_MITARBEITER = "SELECT * FROM [dbo].[vwArbeitszeitanteile] WHERE Mitarbeiter_PNR = ?";
 

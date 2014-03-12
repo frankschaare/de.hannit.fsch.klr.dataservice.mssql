@@ -994,5 +994,30 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 			}	
 	return e;
 	}
+
+	/**
+	 * Liefert die letzten gespeicherten AZV-Meldungen, 
+	 * sowie die Anzahl der für diesen Monat erfassten Datensätze 
+	 */
+	@Override
+	public TreeMap<Integer, String> getAZVMAXMonat()
+	{
+	TreeMap<Integer, String> result = new TreeMap<Integer, String>();
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_ARBEITSZEITANTEILE_LETZTERBERICHTSMONAT);
+		rs = ps.executeQuery();
+						
+		    while (rs.next()) 
+		    {
+		    result.put(rs.getInt(2), rs.getString(1));
+		    }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return result;
+	}
 }
 
