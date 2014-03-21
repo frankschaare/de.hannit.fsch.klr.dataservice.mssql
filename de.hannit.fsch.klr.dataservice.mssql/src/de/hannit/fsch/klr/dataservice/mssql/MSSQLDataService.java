@@ -841,6 +841,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	boolean result = false;
 		try 
 		{
+		con.setAutoCommit(false);	
 		ps = con.prepareStatement(PreparedStatements.INSERT_PERSONALDURCHSCHNITTSKOSTEN);
 		ps.setInt(1, teamNR);
 		ps.setString(2, sqlServerDatumsFormat.format(datum));
@@ -851,12 +852,21 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		ps.setDouble(7, abzugVorkostenstellen);
 				
 		result = ps.execute();
+		con.commit();
 		} 
 		catch (SQLException exception) 
 		{
 		exception.printStackTrace();
 		e = exception;
-			}	
+			try
+			{
+			con.rollback();
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}
+		}	
 	return e;
 	}
 
