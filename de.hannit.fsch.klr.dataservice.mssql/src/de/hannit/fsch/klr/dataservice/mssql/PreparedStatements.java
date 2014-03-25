@@ -34,6 +34,11 @@ public static final String DELETE_PERSONALDURCHSCHNITTSKOSTEN = "DELETE FROM [db
 public static final String INSERT_KOSTENTRAEGER = "INSERT INTO [dbo].[Kostentraeger] ([Kostentraeger],[Bezeichnung],[von])VALUES (?, ?, ?)";
 public static final String INSERT_AZV = "INSERT INTO [dbo].[Arbeitszeitanteile] ([Mitarbeiter_PNR],[TeamNR],[Berichtsmonat],[Kostenstelle],[Kostentraeger],[Prozentanteil]) VALUES (?, ?, ?, ?, ?, ?)";
 
+public static final String INSERT_TEAMMITGLIEDSCHAFTEN = "INSERT INTO [dbo].[TeamMitglieder] ([ID],[Mitarbeiter_PNR],[TeamNR],[DatumVon],[DatumBis]) VALUES (NEWID(), ?, ?, ?, ?)";
+public static final String UPDATE_TEAMMITGLIEDSCHAFT = "UPDATE [dbo].[TeamMitglieder] SET [DatumBis] = ? WHERE [Mitarbeiter_PNR] = ? AND [TeamNR] = ? AND [DatumBis] IS NULL";
+public static final String SELECT_TEAMMITGLIEDSCHAFTEN = "SELECT [Mitarbeiter_PNR], [TeamNR], [DatumVon], [DatumBis] FROM [dbo].[TeamMitglieder] WHERE [Mitarbeiter_PNR] = ?";
+public static final String SELECT_AKTUELLES_TEAM = "SELECT [TeamNR] FROM [dbo].[TeamMitglieder] WHERE [Mitarbeiter_PNR] = ? AND [DatumBis] IS NULL";
+
 public static final String SELECT_TARIFGRUPPEN = "SELECT Tarifgruppe, SUM(Brutto) AS [Summe Tarifgruppe], SUM(Stellenanteil) AS [Summe Stellen], SUM(Brutto) / SUM(Stellenanteil) AS Vollzeitäquivalent FROM dbo.LoGa WHERE (Berichtsmonat = ?) GROUP BY Tarifgruppe";
 
 public static final String SELECT_ARBEITSZEITANTEILE = "SELECT * FROM [dbo].[Arbeitszeitanteile] WHERE Mitarbeiter_PNR = ?";

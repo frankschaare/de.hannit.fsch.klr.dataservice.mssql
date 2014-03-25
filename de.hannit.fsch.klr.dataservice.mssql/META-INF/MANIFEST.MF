@@ -5,16 +5,12 @@ Bundle-SymbolicName: de.hannit.fsch.klr.dataservice.mssql
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: de.hannit.fsch.klr.dataservice.mssql.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: de.hannit.fsch.common.mitarbeiter,
- org.eclipse.core.runtime;version="3.4.0",
+Import-Package: org.eclipse.core.runtime;version="3.4.0",
  org.osgi.framework;version="1.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/
 Require-Bundle: de.hannit.fsch.klr.dataservice;bundle-version="1.0.0",
- de.hannit.fsch.common.csv.loga,
- de.hannit.fsch.common.csv.azv,
- de.hannit.fsch.common.organisation.hannit,
- de.hannit.fsch.common.mitarbeiter,
- com.microsoft.sqlserver.jdbc.SQLServerDriver;bundle-version="1.0.0"
+ com.microsoft.sqlserver.jdbc.SQLServerDriver;bundle-version="1.0.0",
+ de.hannit.fsch.klr.model
 Service-Component: OSGI-INF/MSSQLDataService.xml

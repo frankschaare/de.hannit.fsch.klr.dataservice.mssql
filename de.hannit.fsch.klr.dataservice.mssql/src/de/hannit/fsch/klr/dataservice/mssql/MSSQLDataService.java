@@ -26,15 +26,17 @@ import org.eclipse.core.runtime.FileLocator;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 
-import de.hannit.fsch.common.csv.azv.AZVDatensatz;
-import de.hannit.fsch.common.csv.azv.Arbeitszeitanteil;
-import de.hannit.fsch.common.loga.LoGaDatensatz;
-import de.hannit.fsch.common.mitarbeiter.Mitarbeiter;
-import de.hannit.fsch.common.mitarbeiter.besoldung.Tarifgruppe;
-import de.hannit.fsch.common.mitarbeiter.besoldung.Tarifgruppen;
-import de.hannit.fsch.common.organisation.hannit.Organisation;
-import de.hannit.fsch.common.organisation.reporting.Monatsbericht;
 import de.hannit.fsch.klr.dataservice.DataService;
+import de.hannit.fsch.klr.model.azv.AZVDaten;
+import de.hannit.fsch.klr.model.azv.AZVDatensatz;
+import de.hannit.fsch.klr.model.azv.Arbeitszeitanteil;
+import de.hannit.fsch.klr.model.loga.LoGaDatensatz;
+import de.hannit.fsch.klr.model.mitarbeiter.Mitarbeiter;
+import de.hannit.fsch.klr.model.mitarbeiter.Tarifgruppe;
+import de.hannit.fsch.klr.model.mitarbeiter.Tarifgruppen;
+import de.hannit.fsch.klr.model.organisation.Monatsbericht;
+import de.hannit.fsch.klr.model.organisation.Organisation;
+import de.hannit.fsch.klr.model.team.TeamMitgliedschaft;
 
 
 /**
@@ -1027,6 +1029,203 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		{
 		e.printStackTrace();
 		}	
+	return result;
+	}
+
+	@Override
+	public SQLException setTeammitgliedschaften(AZVDaten azvDaten)
+	{
+	SQLException e = null;	
+	TreeMap<Integer, Integer> tm = azvDaten.getTeamMitglieder();
+	
+		try 
+		{
+		con.setAutoCommit(false);	
+		ps = con.prepareStatement(PreparedStatements.INSERT_TEAMMITGLIEDSCHAFTEN);
+			
+			for (Integer pnr : tm.keySet())
+			{
+			ps.setInt(1, pnr);
+			ps.setInt(2, tm.get(pnr));
+			ps.setDate(3, azvDaten.getBerichtsMonatSQL());
+			ps.setDate(4, null);
+			
+			ps.execute();
+			}
+		
+		con.commit();
+		con.setAutoCommit(true);	
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+			try
+			{
+			con.rollback();
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}
+		}	
+	return e;
+	}
+
+	@Override
+	public SQLException updateTeammitgliedschaft(int personalNummer, int teamNummerAlt, int teamNummerNeu,  Date startDatum, Date endDatum)
+	{
+	SQLException e = null;	
+		
+		try 
+		{
+		con.setAutoCommit(false);	
+		ps = con.prepareStatement(PreparedStatements.UPDATE_TEAMMITGLIEDSCHAFT);
+			
+		ps.setDate(1, endDatum);
+		ps.setInt(2, personalNummer);
+		ps.setInt(3, teamNummerAlt);
+		ps.execute();
+		
+		ps = con.prepareStatement(PreparedStatements.INSERT_TEAMMITGLIEDSCHAFTEN);
+		
+		ps.setInt(1, personalNummer);
+		ps.setInt(2, teamNummerNeu);
+		ps.setDate(3, startDatum);
+		ps.setDate(4, null);
+			
+		ps.execute();		
+			
+		con.commit();
+		con.setAutoCommit(true);	
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+			try
+			{
+			con.rollback();
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}
+		}	
+	return e;
+	}	
+	
+	@Override
+	public SQLException setTeammitgliedschaft(int personalNummer, int teamNummer, Date startDatum)
+	{
+	SQLException e = null;	
+		
+		try 
+		{
+		con.setAutoCommit(false);	
+		ps = con.prepareStatement(PreparedStatements.INSERT_TEAMMITGLIEDSCHAFTEN);
+			
+		ps.setInt(1, personalNummer);
+		ps.setInt(2, teamNummer);
+		ps.setDate(3, startDatum);
+		ps.setDate(4, null);
+			
+		ps.execute();
+			
+		con.commit();
+		con.setAutoCommit(true);	
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+			try
+			{
+			con.rollback();
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}
+		}	
+	return e;
+	}
+
+	@Override
+	public int getAktuellesTeam(int personalNummer)
+	{
+	int teamNummer = - 1;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_AKTUELLES_TEAM);
+		ps.setInt(1, personalNummer);
+		rs = ps.executeQuery();
+			if (rs.next())
+			{
+			teamNummer = rs.getInt(1);
+			}
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+		finally
+		{
+			try
+			{
+			rs.close();
+			if (rs != null)	{rs = null;}
+			}
+			catch (SQLException e)
+			{
+			e.printStackTrace();
+			}	
+		}
+	return teamNummer;
+	}
+
+	@Override
+	public ArrayList<TeamMitgliedschaft> getTeamMitgliedschaften(int personalNummer)
+	{
+	ArrayList<TeamMitgliedschaft> result = new ArrayList<>();
+	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_TEAMMITGLIEDSCHAFTEN);
+		ps.setInt(1, personalNummer);
+		rs = ps.executeQuery();
+			while (rs.next())
+			{
+			TeamMitgliedschaft tm = new TeamMitgliedschaft();	
+
+			tm.setPersonalNummer(rs.getInt(1));
+			tm.setTeamNummer(rs.getInt(2));
+			tm.setSqlStartdatum(rs.getDate(3));
+			
+				if (rs.getDate(4) != null)
+				{
+				tm.setSqlEnddatum(rs.getDate(4));	
+				}
+			result.add(tm);	
+			}
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+		finally
+		{
+			try
+			{
+			rs.close();
+			if (rs != null)	{rs = null;}
+			}
+			catch (SQLException e)
+			{
+			e.printStackTrace();
+			}	
+		}
+	
 	return result;
 	}
 }
