@@ -37,6 +37,7 @@ public static final String INSERT_AZV = "INSERT INTO [dbo].[Arbeitszeitanteile] 
 public static final String INSERT_TEAMMITGLIEDSCHAFTEN = "INSERT INTO [dbo].[TeamMitglieder] ([ID],[Mitarbeiter_PNR],[TeamNR],[DatumVon],[DatumBis]) VALUES (NEWID(), ?, ?, ?, ?)";
 public static final String UPDATE_TEAMMITGLIEDSCHAFT = "UPDATE [dbo].[TeamMitglieder] SET [DatumBis] = ? WHERE [Mitarbeiter_PNR] = ? AND [TeamNR] = ? AND [DatumBis] IS NULL";
 public static final String SELECT_TEAMMITGLIEDSCHAFTEN = "SELECT [Mitarbeiter_PNR], [TeamNR], [DatumVon], [DatumBis] FROM [dbo].[TeamMitglieder] WHERE [Mitarbeiter_PNR] = ?";
+public static final String SELECT_TEAMMITGLIEDSCHAFT_PERSONALNUMMER = "SELECT [Mitarbeiter_PNR],[TeamNR],[DatumVon],[DatumBis] FROM [dbo].[TeamMitglieder] WHERE [Mitarbeiter_PNR] = ?";
 public static final String SELECT_AKTUELLES_TEAM = "SELECT [TeamNR] FROM [dbo].[TeamMitglieder] WHERE [Mitarbeiter_PNR] = ? AND [DatumBis] IS NULL";
 
 public static final String SELECT_TARIFGRUPPEN = "SELECT Tarifgruppe, SUM(Brutto) AS [Summe Tarifgruppe], SUM(Stellenanteil) AS [Summe Stellen], SUM(Brutto) / SUM(Stellenanteil) AS Vollzeitäquivalent FROM dbo.LoGa WHERE (Berichtsmonat = ?) GROUP BY Tarifgruppe";

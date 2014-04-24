@@ -163,6 +163,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 			    		else
 			    		{
 			    		m = new Mitarbeiter();
+			    		m.setTeamMitgliedschaften(getTeamMitgliedschaften(iPNR));
 			    		m.setPersonalNR(iPNR);
 			    		m.setNachname(rs.getString(2));
 			    		m.setVorname((rs.getString(3) != null ? rs.getString(3) : "unbekannt"));
@@ -465,6 +466,25 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}	
 	return result;
 	}
+	
+	@Override
+	public boolean existsTeammitgliedschaft(int personalNummer)
+	{
+	boolean result = false;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_TEAMMITGLIEDSCHAFT_PERSONALNUMMER);
+		ps.setInt(1, personalNummer);
+		rs = ps.executeQuery();
+				
+	    result = rs.next();
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return result;
+	}	
 
 	@Override
 	public boolean existsKostenstelle(String kostenStelle)
@@ -1193,18 +1213,18 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		{
 		ps = con.prepareStatement(PreparedStatements.SELECT_TEAMMITGLIEDSCHAFTEN);
 		ps.setInt(1, personalNummer);
-		rs = ps.executeQuery();
-			while (rs.next())
+		subSelect = ps.executeQuery();
+			while (subSelect.next())
 			{
 			TeamMitgliedschaft tm = new TeamMitgliedschaft();	
 
-			tm.setPersonalNummer(rs.getInt(1));
-			tm.setTeamNummer(rs.getInt(2));
-			tm.setSqlStartdatum(rs.getDate(3));
+			tm.setPersonalNummer(subSelect.getInt(1));
+			tm.setTeamNummer(subSelect.getInt(2));
+			tm.setSqlStartdatum(subSelect.getDate(3));
 			
-				if (rs.getDate(4) != null)
+				if (subSelect.getDate(4) != null)
 				{
-				tm.setSqlEnddatum(rs.getDate(4));	
+				tm.setSqlEnddatum(subSelect.getDate(4));	
 				}
 			result.add(tm);	
 			}
@@ -1213,19 +1233,6 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		{
 		e.printStackTrace();
 		}	
-		finally
-		{
-			try
-			{
-			rs.close();
-			if (rs != null)	{rs = null;}
-			}
-			catch (SQLException e)
-			{
-			e.printStackTrace();
-			}	
-		}
-	
 	return result;
 	}
 }
