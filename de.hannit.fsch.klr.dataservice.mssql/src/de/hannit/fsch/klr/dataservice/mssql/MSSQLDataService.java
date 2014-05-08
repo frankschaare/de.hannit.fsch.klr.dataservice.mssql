@@ -468,6 +468,26 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	}
 	
 	@Override
+	public boolean existsAZVDatensatz(int personalNummer, java.sql.Date berichtsMonat)
+	{
+	boolean result = false;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_ARBEITSZEITANTEILE_MITARBEITER_BERICHTSMONAT);
+		ps.setInt(1, personalNummer);
+		ps.setDate(2, berichtsMonat);
+		rs = ps.executeQuery();
+				
+	    result = rs.next();
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return result;
+	}	
+	
+	@Override
 	public boolean existsTeammitgliedschaft(int personalNummer)
 	{
 	boolean result = false;	
@@ -1234,6 +1254,24 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		e.printStackTrace();
 		}	
 	return result;
+	}
+
+	@Override
+	public SQLException deleteAZVDaten(Date datum)
+	{
+	SQLException e = null;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.DELETE_ARBEITSZEITANTEILE_BERICHTSMONAT);
+		ps.setDate(1, datum);
+		boolean	result = ps.execute();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+		}	
+	return e;
 	}
 }
 
