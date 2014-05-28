@@ -22,6 +22,8 @@ import java.util.Calendar;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import javax.security.auth.login.AppConfigurationEntry;
+
 import org.eclipse.core.runtime.FileLocator;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
@@ -30,6 +32,8 @@ import de.hannit.fsch.klr.dataservice.DataService;
 import de.hannit.fsch.klr.model.azv.AZVDaten;
 import de.hannit.fsch.klr.model.azv.AZVDatensatz;
 import de.hannit.fsch.klr.model.azv.Arbeitszeitanteil;
+import de.hannit.fsch.klr.model.kostenrechnung.KostenStelle;
+import de.hannit.fsch.klr.model.kostenrechnung.KostenTraeger;
 import de.hannit.fsch.klr.model.loga.LoGaDatensatz;
 import de.hannit.fsch.klr.model.mitarbeiter.Mitarbeiter;
 import de.hannit.fsch.klr.model.mitarbeiter.Tarifgruppe;
@@ -726,6 +730,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 				}
 			azv.setProzentanteil(rsAZV.getInt(9));
 			azv.setITeam(rsAZV.getInt(10));
+			azv.setID(rsAZV.getString(11));
 		    
 		    arbeitszeitAnteile.add(azv);
 		    }
@@ -737,6 +742,47 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		
 	return arbeitszeitAnteile;
 	}
+	
+	@Override
+	public ArrayList<Arbeitszeitanteil> getArbeitszeitanteileMAXMonat(int personalNummer)
+	{
+	ArrayList<Arbeitszeitanteil> arbeitszeitAnteile = new ArrayList<Arbeitszeitanteil>();	
+	Arbeitszeitanteil azv = null;
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_ARBEITSZEITANTEILE_MITARBEITER_LETZTERBERICHTSMONAT);
+		ps.setInt(1, personalNummer);
+		ps.setInt(2, personalNummer);
+		rsAZV = ps.executeQuery();
+					
+		    while (rsAZV.next()) 
+		    {
+			azv = new Arbeitszeitanteil();
+			azv.setBerichtsMonat(rsAZV.getDate(4));
+				if (rsAZV.getString(5) != null)
+				{
+				azv.setKostenstelle(rsAZV.getString(5));
+				azv.setKostenStelleBezeichnung(rsAZV.getString(6));
+				}
+				else
+				{
+				azv.setKostentraeger(rsAZV.getString(7));
+				azv.setKostenTraegerBezeichnung(rsAZV.getString(8));
+				}
+			azv.setProzentanteil(rsAZV.getInt(9));
+			azv.setITeam(rsAZV.getInt(10));
+			azv.setID(rsAZV.getString(11));
+		    
+		    arbeitszeitAnteile.add(azv);
+		    }
+			} 
+			catch (SQLException e) 
+			{
+			e.printStackTrace();
+			}	
+		
+	return arbeitszeitAnteile;
+	}	
 	
 	@Override
 	public ArrayList<Arbeitszeitanteil> getArbeitszeitanteile(int personalNummer)
@@ -790,12 +836,44 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		    
 		    monatsBerichte.put(bericht.getBerichtsMonat(), bericht);
 		    }
-			} 
-			catch (SQLException e) 
-			{
-			e.printStackTrace();
-			}	
-	hannit.setMonatsBerichte(monatsBerichte);
+	    hannit.setMonatsBerichte(monatsBerichte);
+	    
+	    TreeMap<Integer, KostenStelle> kostenstellen = new TreeMap<>();
+		ps = con.prepareStatement(PreparedStatements.SELECT_KOSTENSTELLEN);
+		rs = ps.executeQuery();
+			
+			int index = 0;
+			KostenStelle kst;
+		    while (rs.next()) 
+		    {
+		    kst = new KostenStelle();
+		    kst.setBezeichnung(rs.getString(1));
+		    kst.setBeschreibung(rs.getString(2));
+		    kostenstellen.put(index, kst);
+		    index++;
+		    }
+		hannit.setKostenstellen(kostenstellen);
+		
+	    TreeMap<Integer, KostenTraeger> kostentraeger = new TreeMap<>();
+		ps = con.prepareStatement(PreparedStatements.SELECT_KOSTENTRAEGER);
+		rs = ps.executeQuery();
+			
+			index = 0;
+			KostenTraeger ktr;
+		    while (rs.next()) 
+		    {
+		    ktr = new KostenTraeger();
+		    ktr.setBezeichnung(rs.getString(1));
+		    ktr.setBeschreibung(rs.getString(2));
+		    kostentraeger.put(index, ktr);
+		    index++;
+		    }
+		hannit.setKostentraeger(kostentraeger);		
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
 	
 	return hannit;
 	}
@@ -1271,6 +1349,84 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		exception.printStackTrace();
 		e = exception;
 		}	
+	return e;
+	}
+
+	@Override
+	public SQLException saveAZVChanges(TreeMap<String, Arbeitszeitanteil> unsavedChanges)
+	{
+	SQLException e = null;	
+	
+		try 
+		{
+		con.setAutoCommit(false);
+		
+			for (String id : unsavedChanges.keySet())
+			{
+			Arbeitszeitanteil azv = unsavedChanges.get(id);
+				/*
+				 * Vorhandene Datensätze haben bereits eine ID
+				 * Hier wird diew Datenbank aktualisiert. 
+				 * Ansonsten erfolgt ein Insert mit neuer ID
+				 */
+				if (id.equalsIgnoreCase("addRow"))
+				{
+				ps = con.prepareStatement(PreparedStatements.INSERT_AZV);
+				ps.setInt(1, azv.getPersonalNummer());
+				ps.setInt(2, azv.getITeam());
+				ps.setDate(3, azv.getBerichtsMonat());
+				
+					if (azv.getKostenstelle() != null)
+					{
+					ps.setString(4, azv.getKostenstelle());
+					ps.setNull(5, Types.NULL);
+					}
+					else
+					{
+					ps.setNull(4, Types.NULL);
+					ps.setString(5, azv.getKostentraeger());
+					}
+				ps.setInt(6, azv.getProzentanteil());
+				ps.execute();					
+				}
+				// ID vorhanden = Update
+				else
+				{
+				ps = con.prepareStatement(PreparedStatements.UPDATE_AZV);
+				ps.setString(1, azv.getKostenstelle() != null ? azv.getKostenstelle() : null);
+				ps.setString(2, azv.getKostentraeger() != null ? azv.getKostentraeger() : null);
+				ps.setInt(3, azv.getProzentanteil());
+				ps.setString(4, azv.getID());
+				ps.execute();
+				}				
+			}
+		
+		con.commit();
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+			try
+			{
+			con.rollback();
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}
+		}
+		finally
+		{
+			try
+			{
+			con.setAutoCommit(true);
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}	
+		}
 	return e;
 	}
 }
