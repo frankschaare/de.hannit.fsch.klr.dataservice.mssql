@@ -21,6 +21,7 @@ public static final String SELECT_MITARBEITER = "SELECT * FROM [dbo].[Mitarbeite
 public static final String SELECT_PERSONALNUMMER = "SELECT [PNr] FROM [dbo].[Mitarbeiter] WHERE Nachname = ?";
 public static final String SELECT_MITARBEITER_PERSONALNUMMER = "SELECT * FROM [dbo].[Mitarbeiter] WHERE [PNr] = ?";
 public static final String SELECT_MITARBEITER_AKTUELL = "SELECT l.Mitarbeiter_PNR, m.Nachname, m.Vorname, l.Berichtsmonat, l.Brutto, l.Tarifgruppe, l.Stellenanteil FROM dbo.LoGa AS l INNER JOIN dbo.Mitarbeiter AS m ON l.Mitarbeiter_PNR = m.PNr WHERE (l.Berichtsmonat = ?)";
+public static final String SELECT_MITARBEITER_LETZTER_STELLENANTEIL = "SELECT [Stellenanteil] FROM [dbo].[LoGa] WHERE Mitarbeiter_PNR = ? AND Berichtsmonat = (SELECT MAX([Berichtsmonat]) FROM [dbo].[LoGa] WHERE Mitarbeiter_PNR = ?)";
 
 public static final String SELECT_KOSTENSTELLE = "SELECT * FROM [dbo].[Kostenstellen] WHERE Kostenstelle = ?";
 public static final String SELECT_KOSTENSTELLEN = "SELECT * FROM [dbo].[Kostenstellen]";
@@ -66,4 +67,6 @@ public static final String INSERT_MONATSSUMMEN = "INSERT INTO [dbo].[Monatssumme
 public static final String INSERT_MONATSSUMMENVZAE = "INSERT INTO [dbo].[MonatssummenVZAE] ([ID], [Berichtsmonat], [Tarifgruppe], [SummeTarifgruppe], [SummeStellen], [VZAE]) VALUES (NEWID(), ?, ?, ?, ?, ?)";
 
 public static final String INSERT_LOGA = "INSERT INTO [dbo].[LoGa] ([Mitarbeiter_PNR], [Berichtsmonat], [Brutto], [Tarifgruppe], [Tarifstufe], [Stellenanteil]) VALUES (?, ?, ?, ?, ?, ?)";
+
+public static final String INSERT_CALLCENTERDATEN = "INSERT INTO [dbo].[CallcenterMonitoring] ([ID],[Datum],[ZeitVon],[ZeitBis],[EingehendeAnrufe],[ZugeordneteAnrufe],[AngenommeneAnrufe],[AnrufeInWarteschlange],[TrotzZuordnungAufgelegt],[InWarteschlangeAufgelegt],[DuschnittlicheWarteZeit],[DuschnittlicheWarteZeitSekunden]) VALUES (NEWID(),?,?,?,?,?,?,?,?,?,?,?)";
 }

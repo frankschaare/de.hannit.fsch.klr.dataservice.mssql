@@ -16,13 +16,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 import java.util.TreeMap;
-
-import javax.security.auth.login.AppConfigurationEntry;
 
 import org.eclipse.core.runtime.FileLocator;
 
@@ -1301,6 +1301,40 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}
 	return teamNummer;
 	}
+	
+	@Override
+	public double getLetzterStellenanteil(int personalNummer)
+	{
+	double letzterStellenanteil = 0;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_MITARBEITER_LETZTER_STELLENANTEIL);
+		ps.setInt(1, personalNummer);
+		ps.setInt(2, personalNummer);
+		rs = ps.executeQuery();
+			if (rs.next())
+			{
+			letzterStellenanteil = rs.getInt(1);
+			}
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+		finally
+		{
+			try
+			{
+			rs.close();
+			if (rs != null)	{rs = null;}
+			}
+			catch (SQLException e)
+			{
+			e.printStackTrace();
+			}	
+		}
+	return letzterStellenanteil;
+	}	
 
 	@Override
 	public ArrayList<TeamMitgliedschaft> getTeamMitgliedschaften(int personalNummer)
@@ -1427,6 +1461,117 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 			e1.printStackTrace();
 			}	
 		}
+	return e;
+	}
+
+	@Override
+	public SQLException setCallcenterDaten(List<String> lines)
+	{
+	SQLException e = null;	
+	boolean result = false;
+
+	DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
+	
+	String[] parts = null;
+	
+	java.util.Date datum = null;
+	java.sql.Time durchschnittlicheWartezeit = null;
+	int durchschnittlicheWartezeitInSekunden = 0;
+	Calendar cal = Calendar.getInstance();
+	
+	final int FELD_DATUM = 0;
+	final int FELD_STARTZEIT = 1;
+	final int FELD_ENDZEIT = 2;
+	// final int FELD_THEMA = 3;
+	final int FELD_EINGEHENDE_ANRUFE = 4;
+	final int FELD_ZUGEORDNETE_ANRUFE = 5;
+	final int FELD_ANGENOMMENE_ANRUFE = 6;
+	final int FELD_ANRUFE_IN_WARTESCHLANGE = 7;
+	final int FELD_TROTZ_ZUORDNUNG_AUFGELEGT = 8;
+	final int FELD_IN_WARTESCHLANGE_AUFGELEGT = 9;
+	final int FELD_DURCHSCHNITTLICHE_WARTEZEIT = 10;
+	
+		try 
+		{
+		con.setAutoCommit(false);	
+		ps = con.prepareStatement(PreparedStatements.INSERT_CALLCENTERDATEN);
+		
+			for (String line : lines)
+			{
+			parts = line.split(";");
+			
+			datum = df.parse(parts[FELD_DATUM]);
+		
+			ps.setDate(1, new java.sql.Date(datum.getTime()));
+			ps.setTime(2, java.sql.Time.valueOf(parts[FELD_STARTZEIT] + ":00"));
+			ps.setTime(3, java.sql.Time.valueOf(parts[FELD_ENDZEIT] + ":00"));
+			ps.setInt(4, Integer.parseInt(parts[FELD_EINGEHENDE_ANRUFE]));
+			ps.setInt(5, Integer.parseInt(parts[FELD_ZUGEORDNETE_ANRUFE]));
+			ps.setInt(6, Integer.parseInt(parts[FELD_ANGENOMMENE_ANRUFE]));
+			ps.setInt(7, Integer.parseInt(parts[FELD_ANRUFE_IN_WARTESCHLANGE]));
+			ps.setInt(8, Integer.parseInt(parts[FELD_TROTZ_ZUORDNUNG_AUFGELEGT]));
+			ps.setInt(9, Integer.parseInt(parts[FELD_IN_WARTESCHLANGE_AUFGELEGT]));
+			durchschnittlicheWartezeit = parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT].equalsIgnoreCase("-") ? null : java.sql.Time.valueOf(parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT]);
+			ps.setTime(10, parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT].trim().equalsIgnoreCase("-") ? null : durchschnittlicheWartezeit);
+
+				if (durchschnittlicheWartezeit != null)
+				{
+				cal.setTimeInMillis(durchschnittlicheWartezeit.getTime());
+				durchschnittlicheWartezeitInSekunden = (cal.get(Calendar.MINUTE) * 60) + cal.get(Calendar.SECOND);
+				ps.setInt(11, durchschnittlicheWartezeitInSekunden);
+				}
+				else
+				{
+				ps.setInt(11, -1);
+				}
+			result = ps.execute();
+			}
+
+				
+		} 
+		catch (SQLException exception) 
+		{
+		exception.printStackTrace();
+		e = exception;
+		}
+		catch (ParseException e1)
+		{
+		e1.printStackTrace();
+		}
+		finally
+		{
+			if (e == null)
+			{
+				try
+				{
+				con.commit();
+				}
+				catch (SQLException e1)
+				{
+				e1.printStackTrace();
+				}	
+			}
+			else
+			{
+				try
+				{
+					con.rollback();
+				}
+				catch (SQLException e1)
+				{
+				e1.printStackTrace();
+				}	
+			}
+			try
+			{
+			con.setAutoCommit(true);
+			}
+			catch (SQLException e1)
+			{
+			e1.printStackTrace();
+			}	
+		}
+		
 	return e;
 	}
 }
