@@ -1030,6 +1030,28 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}	
 	return personalNR;
 	}
+	
+	@Override
+	public Integer getPersonalnummerbyUserName(String userName)
+	{
+	int personalNR = 0;	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_PERSONALNUMMER_BENUTZERNAME);
+		ps.setString(1, userName);
+		rs = ps.executeQuery();
+		
+	      while (rs.next()) 
+	      {
+    	  personalNR = rs.getInt(1);
+	      }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return personalNR;
+	}	
 
 	@Override
 	public SQLException setErgebnis(String kostenArt, int teamNR, Date berichtsMonat, double ertrag, double materialAufwand, double afa, double sba, double personalkosten, double summeEinzelkosten, double deckungsbeitrag1, double verteilung1110, double verteilung2010, double verteilung2020, double verteilung3010, double verteilung4010, double verteilungGesamt, double ergebnis) 
@@ -1479,17 +1501,17 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	int durchschnittlicheWartezeitInSekunden = 0;
 	Calendar cal = Calendar.getInstance();
 	
-	final int FELD_DATUM = 0;
-	final int FELD_STARTZEIT = 1;
-	final int FELD_ENDZEIT = 2;
+	final int FELD_DATUM = 0;                        // Datum 
+	final int FELD_STARTZEIT = 1;                    // von
+	final int FELD_ENDZEIT = 2;                      // bis
 	// final int FELD_THEMA = 3;
-	final int FELD_EINGEHENDE_ANRUFE = 4;
-	final int FELD_ZUGEORDNETE_ANRUFE = 5;
-	final int FELD_ANGENOMMENE_ANRUFE = 6;
-	final int FELD_ANRUFE_IN_WARTESCHLANGE = 7;
-	final int FELD_TROTZ_ZUORDNUNG_AUFGELEGT = 8;
-	final int FELD_IN_WARTESCHLANGE_AUFGELEGT = 9;
-	final int FELD_DURCHSCHNITTLICHE_WARTEZEIT = 10;
+	final int FELD_EINGEHENDE_ANRUFE = 4;            // totNIncomeLT
+	final int FELD_ZUGEORDNETE_ANRUFE = 5;           // totNAg
+	final int FELD_ANGENOMMENE_ANRUFE = 6;           // totNConvAg
+	final int FELD_ANRUFE_IN_WARTESCHLANGE = 7;      // totNQueuedAnn
+	final int FELD_TROTZ_ZUORDNUNG_AUFGELEGT = 8;    // totNAbanAg
+	final int FELD_IN_WARTESCHLANGE_AUFGELEGT = 9;   // totNAban
+	final int FELD_DURCHSCHNITTLICHE_WARTEZEIT = 10; // øTQueued
 	
 		try 
 		{
@@ -1511,8 +1533,8 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 			ps.setInt(7, Integer.parseInt(parts[FELD_ANRUFE_IN_WARTESCHLANGE]));
 			ps.setInt(8, Integer.parseInt(parts[FELD_TROTZ_ZUORDNUNG_AUFGELEGT]));
 			ps.setInt(9, Integer.parseInt(parts[FELD_IN_WARTESCHLANGE_AUFGELEGT]));
-			durchschnittlicheWartezeit = parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT].equalsIgnoreCase("-") ? null : java.sql.Time.valueOf(parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT]);
-			ps.setTime(10, parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT].trim().equalsIgnoreCase("-") ? null : durchschnittlicheWartezeit);
+			durchschnittlicheWartezeit = parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT].equalsIgnoreCase("-") ? java.sql.Time.valueOf("00:00:00") : java.sql.Time.valueOf(parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT]);
+			ps.setTime(10, parts[FELD_DURCHSCHNITTLICHE_WARTEZEIT].trim().equalsIgnoreCase("-") ? java.sql.Time.valueOf("00:00:00") : durchschnittlicheWartezeit);
 
 				if (durchschnittlicheWartezeit != null)
 				{

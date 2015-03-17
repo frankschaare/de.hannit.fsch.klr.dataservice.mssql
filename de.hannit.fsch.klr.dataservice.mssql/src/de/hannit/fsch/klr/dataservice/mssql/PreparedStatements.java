@@ -19,6 +19,7 @@ public static final String DELETE_ERGEBNIS = "DELETE FROM [dbo].[Ergebnisse] WHE
 public static final String INSERT_MITARBEITER = "INSERT INTO Mitarbeiter ([PNr],[Benutzer],[Nachname],[Vorname]) VALUES (?,?,?,?)";
 public static final String SELECT_MITARBEITER = "SELECT * FROM [dbo].[Mitarbeiter]";
 public static final String SELECT_PERSONALNUMMER = "SELECT [PNr] FROM [dbo].[Mitarbeiter] WHERE Nachname = ?";
+public static final String SELECT_PERSONALNUMMER_BENUTZERNAME = "SELECT [PNr] FROM [dbo].[Mitarbeiter] WHERE Benutzer = ?";
 public static final String SELECT_MITARBEITER_PERSONALNUMMER = "SELECT * FROM [dbo].[Mitarbeiter] WHERE [PNr] = ?";
 public static final String SELECT_MITARBEITER_AKTUELL = "SELECT l.Mitarbeiter_PNR, m.Nachname, m.Vorname, l.Berichtsmonat, l.Brutto, l.Tarifgruppe, l.Stellenanteil FROM dbo.LoGa AS l INNER JOIN dbo.Mitarbeiter AS m ON l.Mitarbeiter_PNR = m.PNr WHERE (l.Berichtsmonat = ?)";
 public static final String SELECT_MITARBEITER_LETZTER_STELLENANTEIL = "SELECT [Stellenanteil] FROM [dbo].[LoGa] WHERE Mitarbeiter_PNR = ? AND Berichtsmonat = (SELECT MAX([Berichtsmonat]) FROM [dbo].[LoGa] WHERE Mitarbeiter_PNR = ?)";
