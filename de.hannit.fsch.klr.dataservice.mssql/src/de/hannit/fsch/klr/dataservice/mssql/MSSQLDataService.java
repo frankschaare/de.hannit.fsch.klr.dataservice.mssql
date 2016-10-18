@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -1009,6 +1010,45 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 	return e;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see de.hannit.fsch.klr.dataservice.DataService#getPersonalnummern()
+	 * 
+	 * Liefert eine Liste aller gespeicherten Personalnummern.
+	 * 
+	 * Wird benutzt von:
+	 * - AZVWebServiceEditablePart (ComboBoxCellEditor PNR)
+	 */
+	@Override
+	public String[] getPersonalnummern()
+	{
+	ArrayList<String> pnrs = new ArrayList<>();
+	int pnr = 0;
+	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_PERSONALNUMMERN);
+		rs = ps.executeQuery();
+		
+	      while (rs.next()) 
+	      {
+    	  pnr = rs.getInt(1);
+    	  pnrs.add(String.valueOf(pnr));
+	      }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+		
+	String[] result = new String[pnrs.size()];
+		for (int i = 0; i < pnrs.size(); i++)
+		{
+		result[i] = pnrs.get(i);
+		}
+	return result;	
+	}
+	
 	@Override
 	public Integer getPersonalnummer(String nachname)
 	{
@@ -1030,6 +1070,60 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}	
 	return personalNR;
 	}
+
+	@Override
+	public Integer getPersonalnummer(String nachname, String username)
+	{
+	int personalNR = 0;	
+	TreeMap<Integer, String> result = new TreeMap<Integer, String>();
+	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_PERSONALNUMMER_KOMPLETT);
+		ps.setString(1, nachname);
+		rs = ps.executeQuery();
+		
+	      while (rs.next()) 
+	      {
+	      result.put(rs.getInt(1), rs.getString(2));	  
+	      }
+	      
+	      switch (result.size())
+	      {
+	      case 0:
+		  // Keine Treffer gefunden, Personalnummer bleibt 0
+	      System.out.println("Für Mitarbeiter " + nachname + " wurde keine Personalnummer gefunden.");	    	  
+	      break;
+	      
+	      case 1:
+	      personalNR = result.firstKey();	
+	      System.out.println("Für Mitarbeiter " + nachname + " wurde Personalnummer " + personalNR + " gefunden.");
+	      break;
+
+	      default:
+		      for (Entry<Integer, String> entry : result.entrySet())
+		      {
+		    	  try
+		    	  {
+			    	  if (entry.getValue().equalsIgnoreCase(username))
+			    	  {
+			    	  personalNR = entry.getKey(); 	
+			    	  }					
+		    	  }
+		    	  catch (NullPointerException e)
+		    	  {
+		    	  System.err.println("Nachname " + nachname + " existiert mehrfach in der DB, es gibt aber nicht für alle Einträge Benutzernamen ! ");	  
+		    	  }
+		      }	  
+	      break;
+	      }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return personalNR;
+	}	
 	
 	@Override
 	public Integer getPersonalnummerbyUserName(String userName)
