@@ -46,7 +46,7 @@ public static final String SELECT_TEAMMITGLIEDSCHAFT_PERSONALNUMMER = "SELECT [M
 public static final String SELECT_AKTUELLES_TEAM = "SELECT [TeamNR] FROM [dbo].[TeamMitglieder] WHERE [Mitarbeiter_PNR] = ? AND [DatumBis] IS NULL";
 
 public static final String SELECT_TARIFGRUPPEN = "SELECT Tarifgruppe, SUM(Brutto) AS [Summe Tarifgruppe], SUM(Stellenanteil) AS [Summe Stellen], SUM(Brutto) / SUM(Stellenanteil) AS Vollzeitäquivalent FROM dbo.LoGa WHERE (Berichtsmonat = ?) GROUP BY Tarifgruppe";
-
+public static final String SELECT_TARIFGRUPPE_AUSHILFE = "SELECT Art FROM [dbo].[vwAushilfen] WHERE Mitarbeiter_PNr = ?";
 public static final String INSERT_AZV = "INSERT INTO [dbo].[AZVMeldungen] ([ID], [Mitarbeiter_PNR],[TeamNR],[Berichtsmonat],[Kostenstelle],[Kostentraeger],[Prozentanteil]) VALUES (NEWID(),?, ?, ?, ?, ?, ?)";
 public static final String UPDATE_AZV = "UPDATE [dbo].[AZVMeldungen] SET [Kostenstelle] = ?, [Kostentraeger] = ?,[Prozentanteil] = ? WHERE [ID] = ?";
 public static final String SELECT_ARBEITSZEITANTEILE = "SELECT * FROM [dbo].[AZVMeldungen] WHERE Mitarbeiter_PNR = ?";

@@ -161,6 +161,7 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		    	while (rs.next())
 		    	{
 		    	Integer iPNR = rs.getInt(1);
+
 			    		if (mitarbeiter.containsKey(iPNR))
 			    		{
 						m = mitarbeiter.get(iPNR);
@@ -1689,6 +1690,29 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		}
 		
 	return e;
+	}
+
+	@Override
+	public String getTarifgruppeAushilfen(int personalNummer)
+	{
+	String result = null;
+	
+		try 
+		{
+		ps = con.prepareStatement(PreparedStatements.SELECT_TARIFGRUPPE_AUSHILFE);
+		ps.setInt(1, personalNummer);
+		rs = ps.executeQuery();
+					
+		    while (rs.next()) 
+		    {
+		    result = rs.getString(1);	
+		    }
+		} 
+		catch (SQLException e) 
+		{
+		e.printStackTrace();
+		}	
+	return result;
 	}
 }
 
