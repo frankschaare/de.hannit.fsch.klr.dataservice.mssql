@@ -79,17 +79,21 @@ private ArrayList<Mitarbeiter> mitarbeiter = null;
 		InputStream in = new FileInputStream(configFile);
 		props.loadFromXML(in);
 		
-		ds.setServerName(props.getProperty("host", "localhost"));
-		ds.setPortNumber(Integer.parseInt(props.getProperty("port", "1433")));
+		ds.setServerName(props.getProperty("host"));
+		ds.setPortNumber(Integer.parseInt(props.getProperty("port")));
+		
+		// ds.setServerName(props.getProperty("host", "localhost"));
+		// ds.setPortNumber(Integer.parseInt(props.getProperty("port", "1433")));
 		ds.setDatabaseName(props.getProperty("databaseName"));
 		ds.setUser(props.getProperty("user"));
 		ds.setPassword(props.getProperty("password"));
 
 		con = ds.getConnection();
-		
+
 	    DatabaseMetaData dbmd = con.getMetaData();
+	    String[] strURL = dbmd.getURL().split(";");
 	    this.info = "Benutzer " + dbmd.getUserName();
-	    this.info += " verbunden mit " + dbmd.getDatabaseProductName() + " (" + dbmd.getDatabaseProductVersion() + ")";
+	    this.info += " verbunden mit " + strURL[0] + " (" + dbmd.getDatabaseProductVersion() + ")";
 	    this.info += " - " + dbmd.getDriverName() + " (" + dbmd.getDriverVersion() + ")";
 	    } 
 		catch (IOException e) 
